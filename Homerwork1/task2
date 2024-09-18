@@ -1,0 +1,88 @@
+#include <iostream> 
+#include <omp.h> 
+#include <cmath>
+using namespace std;
+
+int main()
+{
+	int n = 100000000;
+	double time1 = 0, time2 = 0;
+	double sum;
+	double k = 0;
+
+	//1
+	time1 = omp_get_wtime();
+	sum = 0;
+		for (int i = 0; i < 100'000'000; ++i)
+		{
+			k = 1.0 / (1 + ((2 * (i + 1) - 1.0) / (2 * n)) * ((2 * (i + 1) - 1.0) / (2 * n)));
+			sum += k;
+		}
+	std::cout << 4 * (1.0 / n) * sum << std::endl;
+	time2 = omp_get_wtime();
+	std::cout << "Time for 1 stream:" << time2 - time1 << std::endl;
+
+	//2
+	time1 = omp_get_wtime();
+	sum = 0;
+#pragma omp parallel sections reduction (+:sum)
+	{
+#pragma omp section
+		for (int i = 0; i < 50'000'000; ++i)
+		{
+			k = 1.0 / (1 + ((2 * (i + 1) - 1.0) / (2 * n)) * ((2 * (i + 1) - 1.0) / (2 * n)));
+			sum += k;
+
+		}
+#pragma omp section
+		for (int i = 50'000'000; i < 100'000'000; ++i)
+		{
+			k = 1.0 / (1 + ((2 * (i + 1) - 1.0) / (2 * n)) * ((2 * (i + 1) - 1.0) / (2 * n)));
+			sum += k;
+
+		}
+	}
+	std::cout << 4 * (1.0 / n) * sum << std::endl;
+	time2 = omp_get_wtime();
+	std::cout << "Time for 2 stream:" << time2 - time1 << std::endl;
+
+	//4
+	time1 = omp_get_wtime();
+	sum = 0;
+#pragma omp parallel sections reduction (+:sum)
+	{
+#pragma omp section
+		for (int i = 0; i < 25'000'000; ++i)
+		{
+			k = 1.0 / (1 + ((2 * (i + 1) - 1.0) / (2 * n)) * ((2 * (i + 1) - 1.0) / (2 * n)));
+			sum += k;
+
+		}
+#pragma omp section
+		for (int i = 25'000'000; i < 50'000'000; ++i)
+		{
+			k = 1.0 / (1 + ((2 * (i + 1) - 1.0) / (2 * n)) * ((2 * (i + 1) - 1.0) / (2 * n)));
+			sum += k;
+
+		}
+#pragma omp section
+		for (int i = 50'000'000; i < 75'000'000; ++i)
+		{
+			k = 1.0 / (1 + ((2 * (i + 1) - 1.0) / (2 * n)) * ((2 * (i + 1) - 1.0) / (2 * n)));
+			sum += k;
+
+		}
+#pragma omp section
+		for (int i = 75'000'000; i < 100'000'000; ++i)
+		{
+			k = 1.0 / (1 + ((2 * (i + 1) - 1.0) / (2 * n)) * ((2 * (i + 1) - 1.0) / (2 * n)));
+			sum += k;
+
+		}
+	}
+	std::cout << 4 * (1.0 / n) * sum << std::endl;
+	time2 = omp_get_wtime();
+	std::cout << "Time for 4 stream:" << time2 - time1 << std::endl;
+
+	return EXIT_SUCCESS;
+}
