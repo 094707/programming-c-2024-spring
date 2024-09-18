@@ -1,1 +1,81 @@
+#include <stdio.h>
+#include <math.h>
+#include <omp.h>
+#include <iostream>
+using namespace std;
+
+const int N = 100000000;
+double mas[N];
+
+int main()
+{
+        //1
+        double time1 = 0, time2 = 0;
+
+        time1 = omp_get_wtime();
+        for (int i = 0; i < N; ++i)
+        {
+            mas[i] = sin(i * 3.14 / 2 / N);
+        }
+        time2 = omp_get_wtime();
+        std::cout << "Time for 1 stream:" << time2 - time1 << std::endl;
+
+        //2
+        time1 = omp_get_wtime();
+#pragma omp parallel sections
+        {
+#pragma omp section
+            {
+                for (int i = 0; i < N / 2; ++i) {
+                    mas[i] = sin(i * 3.14 / 2 / N);
+                }
+            }
+#pragma omp section
+            {
+                for (int i = N / 2; i < N; ++i) {
+                    mas[i] = sin(i * 3.14 / 2 / N);
+                }
+            }
+        }
+        time2 = omp_get_wtime();
+        std::cout << "Time for 2 stream:" << time2 - time1 << std::endl;
+
+        //4
+        time1 = omp_get_wtime();
+#pragma omp parallel sections
+        {
+#pragma omp section
+            {
+                for (int i = 0; i < N / 4; ++i)
+                {
+                    mas[i] = sin(i * 3.14 / 2 / N);
+                }
+            }
+#pragma omp section
+            {
+                for (int i = N / 4; i < N / 2; ++i)
+                {
+                    mas[i] = sin(i * 3.14 / 2 / N);
+                }
+            }
+#pragma omp section
+            {
+                for (int i = N / 2; i < 3 * N / 4; ++i)
+                {
+                    mas[i] = sin(i * 3.14 / 2 / N);
+                }
+            }
+#pragma omp section
+            {
+                for (int i = 3 * N / 4; i < N; ++i)
+                {
+                    mas[i] = sin(i * 3.14 / 2 / N);
+                }
+            }
+        }
+        time2 = omp_get_wtime();
+        std::cout << "Time for 4 stream:" << time2 - time1 << std::endl;
+
+    return EXIT_SUCCESS;
+}
 
