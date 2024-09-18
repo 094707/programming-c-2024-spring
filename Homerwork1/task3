@@ -1,0 +1,80 @@
+#include<cstdlib>
+#include <omp.h>
+#include <iostream>
+
+bool prime(int n)
+{
+	if (n == 1) return false;
+	if (n % 2 == 0 && n != 2) // отдельно проверим делимость на 2
+		return false;
+	for (int i = 3; i * i <= n; i += 2)
+		if (n % i == 0)
+			return false;
+	// выход из функции, как только нашли делитель
+	return true; // цикл закончился, делителей не нашлось
+}
+
+int prime_count1(int n)
+{
+	int sum = 1;
+	double time1, time2;
+	time1 = omp_get_wtime();
+		{
+			for (int i = 3; i < n; i += 2)
+			{
+				if (prime(i))
+				{
+					++sum;
+				}
+			}
+		}
+	time2 = omp_get_wtime();
+	std::cout << "Time for 1 stream:" << time2 - time1 << std::endl;
+	return sum;
+}
+int prime_count2(int n)
+{
+	int sum = 1;
+	double time1, time2;
+	time1 = omp_get_wtime();
+
+#pragma omp parallel sections
+	{
+#pragma omp section
+		{
+			for (int i = 3; i < n / 2; i += 2)
+			{
+				if (prime(i))
+				{
+					++sum;
+				}
+			}
+		}
+
+#pragma omp section
+		{
+			for (int i = n / 2 + 1; i <= n; i += 2)
+			{
+				if (prime(i))
+				{
+					++sum;
+				}
+			}
+
+		}
+	}
+	time2 = omp_get_wtime();
+	std::cout << "Time for 2 stream:" << time2 - time1 << std::endl;
+	return sum;
+}
+
+
+int main()
+{
+	int n = 0;
+	std::cin >> n;
+	std::cout << prime_count1(n) << std::endl;
+	std::cout << prime_count2(n) << std::endl;
+
+	return EXIT_SUCCESS;
+}
